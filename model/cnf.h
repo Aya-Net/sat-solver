@@ -45,6 +45,8 @@ namespace sat {
 
         [[nodiscard]] const std::vector<clause> &clauses() const { return clauses_; }
 
+        [[nodiscard]] size_t history_size() const { return history_.size(); }
+
         const clause &operator[](int i) { return clauses_[i]; }
 
         void add_clause(const clause &cl);
@@ -53,9 +55,15 @@ namespace sat {
 
         void add_history(const std::vector<int> &history);
 
+        void clear_history() {
+            history_.clear();
+            satisfied_.clear();
+            satisfied_.resize(clauses_.size());
+        };
+
         void backtrack();
 
-        analysis_result analyze(const std::vector<byte> &decisions);
+        std::vector<analysis_result> analyze(const std::vector<byte> &decisions);
 
     };
 } // namespace sat

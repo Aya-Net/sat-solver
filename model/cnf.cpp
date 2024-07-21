@@ -74,9 +74,10 @@ namespace sat {
         history_.pop_back();
     }
 
-    analysis_result cnf::analyze(const std::vector<byte> &decisions) {
+    std::vector<analysis_result> cnf::analyze(const std::vector<byte> &decisions) {
         std::vector<int> history;
-        analysis_result res{NONE, 0};
+        std::vector<analysis_result> res;
+        std::vector<bool> is_decided(num_vars_);
 //        if (inactivity_count_ * CNF_REBUILD_RATIO > static_cast<double>(clauses_.size())) {
 //            rebuild_();
 //        }
@@ -88,11 +89,16 @@ namespace sat {
                 case CONFLICT:
                     set_inactivity_(i, 0);
                     add_history(history);
-                    return {CONFLICT, i};
+                    res.emplace_back(CONFLICT, i);
+                    return std::move(res);
                 case DECISION:
-//                    set_inactivity_(i, 0);
-//                    add_history(history);
-                    res = {DECISION, result.decision, i};
+                    set_inactivity_(i, 0);
+                    if (!is_decided[result.decision.id()]) {
+                        add_history(history);
+                        history.clear();
+                        res.emplace_back(DECISION, result.decision, i);
+                        is_decided[result.decision.id()] = true;
+                    }
                     break;
                 case SATISFIED:
                     set_inactivity_(i, inactivity_[i] + 1);
@@ -102,11 +108,8 @@ namespace sat {
                     break;
             }
         }
-        if (res.type == DECISION) {
-            set_inactivity_(res.id, 0);
-            add_history(history);
-        }
-        return res;
+        if (res.empty()) add_history(history);
+        return std::move(res);
     }
 
 } // namespace sat
