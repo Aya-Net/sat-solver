@@ -55,11 +55,7 @@ namespace sat {
 
         void add_history(const std::vector<int> &history);
 
-        void clear_history() {
-            history_.clear();
-            satisfied_.clear();
-            satisfied_.resize(clauses_.size());
-        };
+        void clear_history();;
 
         void backtrack();
 

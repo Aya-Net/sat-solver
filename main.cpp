@@ -12,7 +12,7 @@ using namespace sat;
 void fun_1() {
     int n = 1000;
     bool output_detail = false;
-    //output_detail = true;
+    output_detail = true;
     std::ofstream file_out;
     if (output_detail) file_out.open("./output.txt");
     int tot_time = 0, min_time = 1000000000, max_time = 0;

@@ -29,10 +29,6 @@ namespace sat {
                 }
             }
         }
-//        for (int i : topo_order_) {
-//            std::cout << i << " ";
-//        }
-//        std::cout << std::endl;
     }
 
     void dom_tree::build_() {

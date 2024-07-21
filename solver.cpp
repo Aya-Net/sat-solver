@@ -79,8 +79,6 @@ namespace sat {
 
     void solver::decide_(literal var, const clause &reason) {
         level_ += reason.empty();
-//        std::cout << "decide: " << var << ' ' << (int) decisions_[var.id()]<< std::endl;
-//        assert(decisions_[var.id()] == 0);
         decisions_[var.id()] = var.value();
         levels_[var.id()] = level_;
         history_.emplace_back(var, reason, level_);
@@ -91,19 +89,12 @@ namespace sat {
         if (history_.empty())
             return;
         auto decision = history_.back();
-//        assert(history_.size()+1 == cnf_->history_size());
-//        assert(history_.size() == num_decisions_);
         history_.pop_back();
         decisions_[decision.var().id()] = 0;
         levels_[decision.var().id()] = -1;
         cnf_->backtrack();
         num_decisions_--;
         level_ = history_.empty() ? 0 : history_.back().level();
-//        std::cout << "backtrack: ";
-//        for (auto k : decisions_) {
-//            std::cout << (int) k << ' ';
-//        }
-//        std::cout << std::endl;
     }
 
     void solver::backtrack_by_conflict_(const clause &clause) {
@@ -121,6 +112,11 @@ namespace sat {
     }
 
     result solver::analyze_() {
+        if (next_decision_.valid() && decisions_[next_decision_.id()] == 0) {
+            decide_(next_decision_, clause());
+            next_decision_ = 0;
+            return NONE;
+        }
         auto results = cnf_->analyze(decisions_);
         if (results.empty()) {
             if (num_decisions_ == cnf_->num_vars()) {
@@ -128,21 +124,18 @@ namespace sat {
             }
             for (int i = 1; i <= cnf_->num_vars(); i++) {
                 if (decisions_[order_[i]] == 0) {
-                    //std::cout << "decide_0 ";
                     decide_(literal(order_[i]), clause());
                     break;
                 }
             }
         }
-        for (const auto &result : results) {
+        else for (const auto &result : results) {
             if (result.type == DECISION) {
                 auto cl = (*cnf_)[result.id];
-                //std::cout << "decide_1 ";
                 decide_(result.decision, cl);
             }
             else {
                 const auto &cl = (*cnf_)[result.id];
-                //std::cout << "conflict: " << cl << std::endl;
                 //gen_learnt_clause_(cl);
                 backtrack_by_conflict_(cl);
                 //backtrack_to_level_(level_);
@@ -154,8 +147,7 @@ namespace sat {
                 }
                 auto token = history_.back();
                 backtrack_();
-                //std::cout << "decide_2 ";
-                decide_(-token.var(), clause());
+                next_decision_ = -token.var();
             }
         }
         return NONE;

@@ -32,6 +32,8 @@ namespace sat {
 
         int level_ = 0;
 
+        literal next_decision_;
+
         bool search_();
 
         void backtrack_();

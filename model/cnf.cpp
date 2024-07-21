@@ -112,5 +112,10 @@ namespace sat {
         return std::move(res);
     }
 
+    void cnf::clear_history() {
+        history_.clear();
+        std::fill(satisfied_.begin(), satisfied_.end(), false);
+    }
+
 } // namespace sat
 
